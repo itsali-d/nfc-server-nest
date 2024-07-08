@@ -10,7 +10,13 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { DynamicAuthGuard, LoginUserDto, SignUpUserDto, UpdateUserDto } from 'src/utils';
+import {
+  AddOrRemoveContactDto,
+  DynamicAuthGuard,
+  LoginUserDto,
+  SignUpUserDto,
+  UpdateUserDto,
+} from 'src/utils';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
@@ -54,6 +60,23 @@ export class UserController {
   @UseGuards(DynamicAuthGuard(['jwt', 'user']))
   async update(@Param('id') id: string, @Body() updatedUser: UpdateUserDto) {
     const response = await this.userService.update(id, updatedUser);
+    return response;
+  }
+  @ApiBearerAuth()
+  @Post('add-contact')
+  @UseGuards(DynamicAuthGuard(['user']))
+  async addContact(@Body() body: AddOrRemoveContactDto, @Req() req: any) {
+    const response = await this.userService.addContact(req.user._id, body._id);
+    return response;
+  }
+  @ApiBearerAuth()
+  @Post('remove-contact')
+  @UseGuards(DynamicAuthGuard(['user']))
+  async removeContact(@Body() body: AddOrRemoveContactDto, @Req() req: any) {
+    const response = await this.userService.removeContact(
+      req.user._id,
+      body._id,
+    );
     return response;
   }
 }

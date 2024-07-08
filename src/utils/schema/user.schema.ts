@@ -1,6 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-
+import { Document, Types } from 'mongoose';
+@Schema()
+export class SocialMedia {
+  @Prop({ type: String })
+  link: string;
+  @Prop({ type: String })
+  name: string;
+  @Prop({ type: String })
+  icon: string;
+}
 @Schema()
 export class User extends Document {
   @Prop({ type: String, required: true })
@@ -21,6 +29,10 @@ export class User extends Document {
   @Prop({ type: String })
   nationality: string;
 
+  @Prop({ type: [Types.ObjectId], ref: User.name })
+  contacts: Types.ObjectId[];
+  @Prop({ type: [SocialMedia] })
+  socialMedia: SocialMedia[];
   @Prop({ type: String, unique: true })
   userId: string;
 

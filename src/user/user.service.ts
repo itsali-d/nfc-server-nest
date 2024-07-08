@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
+  AddOrRemoveSocialMediaDto,
   comparePassword,
   generateMessage,
   generateTokenUser,
@@ -119,7 +120,7 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto) {
     try {
       const user = await this.userModel.findById(id);
-      if (Object.values(user).length == 0) {
+      if (user) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
       }
@@ -137,4 +138,55 @@ export class UserService {
       return new Response(this.StatusCode, err?.message, err).error();
     }
   }
+  async addContact(id: string, contactId: string) {
+    try {
+      const updated = await this.userModel.findByIdAndUpdate(
+        id,
+        {
+          $addToSet: { contacts: contactId },
+        },
+        {
+          new: true,
+        },
+      );
+      return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
+    } catch (err: any) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err).error();
+    }
+  }
+  async removeContact(id: string, contactId: string) {
+    try {
+      const updated = await this.userModel.findByIdAndUpdate(
+        id,
+        {
+          $pull: { contacts: contactId },
+        },
+        {
+          new: true,
+        },
+      );
+      return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
+    } catch (err: any) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err).error();
+    }
+  }
+  // async addSocialMedia(id: string, socialMedia: AddOrRemoveSocialMediaDto) {
+  //   try {
+  //     const updated = await this.userModel.findByIdAndUpdate(
+  //       id,
+  //       {
+  //         $addToSet: { socialMedia },
+  //       },
+  //       {
+  //         new: true,
+  //       },
+  //     );
+  //     return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
+  //   } catch (err: any) {
+  //     this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+  //     return new Response(this.StatusCode, err?.message, err).error();
+  //   }
+  // }
 }
