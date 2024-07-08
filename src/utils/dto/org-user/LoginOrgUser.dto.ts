@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 import { CreateOrgUserDto } from './createOrgUser.dto';
 
-export class LoginUserDto extends PartialType(CreateOrgUserDto) {
+export class LoginOrgUserDto extends PartialType(CreateOrgUserDto) {
   @ApiProperty({ example: 'user1@gmail.com' })
   @IsNotEmpty()
   email: string;

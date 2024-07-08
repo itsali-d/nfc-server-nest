@@ -23,11 +23,9 @@ export const generateTokenAdmin = (payload): string => {
   );
 };
 
-export const generateTokenPlayerAndOwner = (
+export const generateTokenUser = (
   payload,
-  isPlayer = true,
 ): string => {
-  console.log(isPlayer);
   return sign(
     {
       _id: (payload as any)._id,
@@ -35,7 +33,7 @@ export const generateTokenPlayerAndOwner = (
       countryCode: payload.countryCode,
       userId: `${payload.countryCode}${payload.phoneNumber}`,
     },
-    isPlayer ? process.env.TOKEN_SECRET_PLAYER : process.env.TOKEN_SECRET_OWNER,
+    process.env.TOKEN_SECRET_USER,
   );
 };
 
