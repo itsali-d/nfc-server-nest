@@ -172,21 +172,40 @@ export class UserService {
       return new Response(this.StatusCode, err?.message, err).error();
     }
   }
-  // async addSocialMedia(id: string, socialMedia: AddOrRemoveSocialMediaDto) {
-  //   try {
-  //     const updated = await this.userModel.findByIdAndUpdate(
-  //       id,
-  //       {
-  //         $addToSet: { socialMedia },
-  //       },
-  //       {
-  //         new: true,
-  //       },
-  //     );
-  //     return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
-  //   } catch (err: any) {
-  //     this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
-  //     return new Response(this.StatusCode, err?.message, err).error();
-  //   }
-  // }
+  async addSocialMedia(id: string, socialMedia: AddOrRemoveSocialMediaDto) {
+    try {
+      const updated = await this.userModel.findByIdAndUpdate(
+        id,
+        {
+          $addToSet: { socialMedia },
+        },
+        {
+          new: true,
+        },
+      );
+      return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
+    } catch (err: any) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err).error();
+    }
+  }
+  async removeSocialMedia(id: string, socialId: string) {
+    try {
+      const updated = await this.userModel
+        .findByIdAndUpdate(
+          id,
+          {
+            $pull: { socialMedia: { _id: socialId } },
+          },
+          {
+            new: true,
+          },
+        )
+        .exec();
+      return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
+    } catch (err: any) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err).error();
+    }
+  }
 }

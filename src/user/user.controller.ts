@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import { UserService } from './user.service';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import {
   AddOrRemoveContactDto,
+  AddOrRemoveSocialMediaDto,
   DynamicAuthGuard,
   LoginUserDto,
   SignUpUserDto,
@@ -54,23 +56,15 @@ export class UserController {
     const response = await this.userService.findOne(id);
     return response;
   }
-
   @ApiBearerAuth()
-  @Patch(':id')
-  @UseGuards(DynamicAuthGuard(['jwt', 'user']))
-  async update(@Param('id') id: string, @Body() updatedUser: UpdateUserDto) {
-    const response = await this.userService.update(id, updatedUser);
-    return response;
-  }
-  @ApiBearerAuth()
-  @Post('add-contact')
+  @Patch('add-contact')
   @UseGuards(DynamicAuthGuard(['user']))
   async addContact(@Body() body: AddOrRemoveContactDto, @Req() req: any) {
     const response = await this.userService.addContact(req.user._id, body._id);
     return response;
   }
   @ApiBearerAuth()
-  @Post('remove-contact')
+  @Patch('remove-contact')
   @UseGuards(DynamicAuthGuard(['user']))
   async removeContact(@Body() body: AddOrRemoveContactDto, @Req() req: any) {
     const response = await this.userService.removeContact(
@@ -79,4 +73,26 @@ export class UserController {
     );
     return response;
   }
+  @ApiBearerAuth()
+  @Patch('add-social')
+  @UseGuards(DynamicAuthGuard(['user']))
+  async addSocial(@Body() body: AddOrRemoveSocialMediaDto, @Req() req: any) {
+    const response = await this.userService.addSocialMedia(req.user._id, body);
+    return response;
+  }
+  @ApiBearerAuth()
+  @Patch('remove-social')
+  @UseGuards(DynamicAuthGuard(['user']))
+  async removeSocial(@Query("socialId") socialId: string , @Req() req: any) {
+    const response = await this.userService.removeSocialMedia(req.user._id, socialId);
+    return response;
+  }
+  @ApiBearerAuth()
+  @Patch(':id')
+  @UseGuards(DynamicAuthGuard(['jwt', 'user']))
+  async update(@Param('id') id: string, @Body() updatedUser: UpdateUserDto) {
+    const response = await this.userService.update(id, updatedUser);
+    return response;
+  }
+  
 }
