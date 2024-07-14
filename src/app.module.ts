@@ -5,10 +5,23 @@ import { OrgUserModule } from './org-user/org-user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
+import { DefaultSeed } from 'src/seeder/default.seeder';
 
 @Module({
-  imports: [OrgUserModule, ConfigModule.forRoot(), MongooseModule.forRoot(process.env.MDB_URL), UserModule],
+  imports: [
+    OrgUserModule,
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot(process.env.MDB_URL),
+    UserModule,
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, DefaultSeed],
 })
-export class AppModule { }
+export class AppModule {
+  constructor(private readonly seederService: DefaultSeed) {
+    this.seedData();
+  }
+  async seedData() {
+    await this.seederService.createAdmin();
+  }
+}

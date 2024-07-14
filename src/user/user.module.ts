@@ -10,6 +10,6 @@ import { JwtStrategyUser } from 'src/utils/strategies/userJwt.strategy';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [UserController],
-  providers: [UserService,JwtStrategyUser ],
+  providers: [UserService, JwtStrategyUser],
 })
 export class UserModule {}

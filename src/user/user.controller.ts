@@ -83,8 +83,11 @@ export class UserController {
   @ApiBearerAuth()
   @Patch('remove-social')
   @UseGuards(DynamicAuthGuard(['user']))
-  async removeSocial(@Query("socialId") socialId: string , @Req() req: any) {
-    const response = await this.userService.removeSocialMedia(req.user._id, socialId);
+  async removeSocial(@Query('socialId') socialId: string, @Req() req: any) {
+    const response = await this.userService.removeSocialMedia(
+      req.user._id,
+      socialId,
+    );
     return response;
   }
   @ApiBearerAuth()
@@ -94,5 +97,4 @@ export class UserController {
     const response = await this.userService.update(id, updatedUser);
     return response;
   }
-  
 }
