@@ -10,7 +10,6 @@ export class LoginUserDto extends PartialType(SignUpUserDto) {
   @ApiProperty({ example: '+971' })
   @IsNotEmpty()
   countryCode: string;
-
   @ApiProperty({ example: '123456' })
   @IsNotEmpty()
   password: string;
