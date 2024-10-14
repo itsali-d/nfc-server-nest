@@ -12,7 +12,6 @@ export const comparePassword = (
   return compare(password, hashedPwd);
 };
 
-
 export const generateTokenAdmin = (payload): string => {
   return sign(
     {
@@ -23,15 +22,11 @@ export const generateTokenAdmin = (payload): string => {
   );
 };
 
-export const generateTokenUser = (
-  payload,
-): string => {
+export const generateTokenUser = (payload): string => {
   return sign(
     {
       _id: (payload as any)._id,
-      phoneNumber: payload.phoneNumber,
-      countryCode: payload.countryCode,
-      userId: `${payload.countryCode}${payload.phoneNumber}`,
+      email: payload.email,
     },
     process.env.TOKEN_SECRET_USER,
   );
@@ -52,4 +47,3 @@ export let nameToSlug = (name) => {
   // Trim leading and trailing hyphens (in case of multiple spaces)
   return cleanedSlug.replace(/^-+|-+$/g, '');
 };
-

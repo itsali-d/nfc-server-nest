@@ -17,6 +17,7 @@ export const generateMessage = (resource: string) => {
     IN_PROCESS: 'Request is in process. Please wait for the response.',
     ALREADY_APPROVED: 'Already Approved!',
     UNAUTHORIZED: 'Unauthorized!',
+    INVALID_OTP: 'Invalid OTP!',
   };
 };
 

@@ -3,3 +3,5 @@ export * from './loginUser.dto';
 export * from './updateUser.dto';
 export * from './addOrRemoveContact.dto';
 export * from './addOrRemoveSocial.dto';
+export * from './verifyOtp.dto';
+export * from './forgetPassword.dto';

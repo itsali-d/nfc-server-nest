@@ -18,6 +18,8 @@ import {
   LoginUserDto,
   SignUpUserDto,
   UpdateUserDto,
+  ForgetPasswordDto,
+  VerifyOtpDto,
 } from 'src/utils';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -28,7 +30,7 @@ export class UserController {
   @ApiOperation({
     summary: 'Register new User for mobile application',
     description:
-      'register new User with role of User using phone number ,name and password',
+      'register new User with role of User using email ,name and password',
   })
   async signup(@Body() signUpUserDto: SignUpUserDto) {
     return this.userService.signup(signUpUserDto);
@@ -36,10 +38,25 @@ export class UserController {
   @Post('login')
   @ApiOperation({
     summary: 'Login User for mobile application',
-    description: 'login User using phone number and password',
+    description: 'login User using email and password',
   })
   async login(@Body() loginUserDto: LoginUserDto) {
     return this.userService.login(loginUserDto);
+  }
+  @Get('send-otp')
+  @ApiBearerAuth()
+  @UseGuards(DynamicAuthGuard(['user']))
+  async sendOTP(
+    @Req() req: any,
+    @Query('isVerification') isVerification: boolean,
+  ) {
+    return this.userService.sendOtp(req.user.email, isVerification);
+  }
+  @Post('verify-otp')
+  @ApiBearerAuth()
+  @UseGuards(DynamicAuthGuard(['user']))
+  async verifyOTP(@Req() req: any, @Body() body: VerifyOtpDto) {
+    return this.userService.verifyOtp(req.user.email, body);
   }
 
   @ApiBearerAuth()
@@ -95,6 +112,16 @@ export class UserController {
   @UseGuards(DynamicAuthGuard(['jwt', 'user']))
   async update(@Param('id') id: string, @Body() updatedUser: UpdateUserDto) {
     const response = await this.userService.update(id, updatedUser);
+    return response;
+  }
+  @ApiBearerAuth()
+  @Patch('forget-password')
+  @UseGuards(DynamicAuthGuard(['user']))
+  async forgetPassword(@Body() body: ForgetPasswordDto, @Req() req: any) {
+    const response = await this.userService.forgetPassword(
+      req.user.email,
+      body,
+    );
     return response;
   }
 }

@@ -4,12 +4,9 @@ import { IsNotEmpty } from 'class-validator';
 import { SignUpUserDto } from './signUpUser.dto';
 
 export class LoginUserDto extends PartialType(SignUpUserDto) {
-  @ApiProperty({ example: '334405887' })
+  @ApiProperty()
   @IsNotEmpty()
-  phoneNumber: string;
-  @ApiProperty({ example: '+971' })
-  @IsNotEmpty()
-  countryCode: string;
+  email: string;
   @ApiProperty({ example: '123456' })
   @IsNotEmpty()
   password: string;

@@ -16,7 +16,10 @@ export class User extends Document {
 
   @Prop({ type: String })
   image: string;
-
+  @Prop({ type: String, unique: true })
+  email: string;
+  @Prop({})
+  otpCode: number;
   @Prop({ type: String })
   phoneNumber: string;
 
@@ -33,9 +36,10 @@ export class User extends Document {
   contacts: Types.ObjectId[];
   @Prop({ type: [SocialMedia] })
   socialMedia: SocialMedia[];
-  @Prop({ type: String, unique: true })
-  userId: string;
-
+  @Prop({ type: Boolean, default: false })
+  verified: boolean;
+  @Prop({ type: Boolean, default: false })
+  forgetPassword: boolean;
   @Prop({ type: Number })
   createdAt: number;
 
