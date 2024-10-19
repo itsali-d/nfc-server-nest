@@ -13,13 +13,16 @@ import {
   UpdateUserDto,
   User,
   VerifyOtpDto,
-  ForgetPasswordDto
+  ForgetPasswordDto,
+  Review,
+  AddReviewDto,
 } from 'src/utils';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
   ) {}
   private MESSAGES = generateMessage('User');
   private StatusCode: number = 200;
@@ -41,7 +44,7 @@ export class UserService {
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
-      delete createUserDto.password;
+      delete createdUser.password;
 
       //generate token
       const token = generateTokenUser(createdUser);
@@ -120,18 +123,19 @@ export class UserService {
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     try {
-      const user = await this.userModel.findById(id);
-      if (user) {
+      const user = await this.userModel
+        .findByIdAndUpdate(
+          id,
+          { $set: { ...updateUserDto, updatedAt: Date.now() } },
+          { new: true },
+        )
+        .select('-password -otpCode');
+      if (!user) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
       }
-      Object.keys(user).forEach((key) => {
-        user[key] = updateUserDto[key];
-      });
-      const updated = await this.userModel
-        .findByIdAndUpdate(id, updateUserDto, { new: true })
-        .select('-password -otpCode');
-      return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
+
+      return new Response(this.StatusCode, this.MESSAGES.UPDATED, user);
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
       return new Response(this.StatusCode, err?.message, err).error();
@@ -271,6 +275,73 @@ export class UserService {
       }
       return new Response(this.StatusCode, this.MESSAGES.UPDATED, user);
     } catch (err: any) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err).error();
+    }
+  }
+  async createReview(review: AddReviewDto) {
+    try {
+      const newReview = new this.reviewModel({
+        ...review,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      const createdReview = await newReview.save();
+      let averageRating = await this.reviewModel.aggregate([
+        {
+          $match: {
+            reviewTo: review.reviewTo,
+          },
+        },
+        {
+          $group: {
+            _id: '$reviewTo',
+            averageRating: { $avg: '$rating' },
+          },
+        },
+      ]);
+      await this.userModel.findByIdAndUpdate(review.reviewTo, {
+        $set: { rating: averageRating[0].averageRating },
+      });
+
+      return new Response(
+        (this.StatusCode = 201),
+        this.MESSAGES.CREATED,
+        createdReview,
+      );
+    } catch (err: any) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err).error();
+    }
+  }
+  async getReviews(reviewTo: string) {
+    try {
+      let reviews = await this.reviewModel
+        .find({ reviewTo })
+        .populate('reviewFrom')
+        .populate('reviewTo');
+      return new Response((this.StatusCode = 200), this.MESSAGES.RETRIEVEALL, {
+        reviews,
+      });
+    } catch (err) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err).error();
+    }
+  }
+  async getFilterUsers(filter) {
+    try {
+      let { category, rating, city } = filter;
+      let users = await this.userModel
+        .find({
+          ...(category && { category }), // Include 'category' only if it's provided
+          ...(city && { city }),
+        })
+        .sort({ rating })
+        .select('-password -otpCode');
+      return new Response((this.StatusCode = 200), this.MESSAGES.RETRIEVEALL, {
+        users,
+      });
+    } catch (err) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
       return new Response(this.StatusCode, err?.message, err).error();
     }

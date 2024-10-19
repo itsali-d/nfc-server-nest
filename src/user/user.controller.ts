@@ -66,6 +66,21 @@ export class UserController {
     let response = await this.userService.getUsers();
     return response;
   }
+  @Get('search-user')
+  @ApiBearerAuth()
+  // @UseGuards(DynamicAuthGuard(['user']))
+  async searchUser(
+    @Query('category') category: string,
+    @Query('rating') rating: number,
+    @Query('city') city: string,
+  ) {
+    const response = await this.userService.getFilterUsers({
+      category,
+      rating,
+      city,
+    });
+    return response;
+  }
   @ApiBearerAuth()
   @Get(':id')
   @UseGuards(DynamicAuthGuard(['jwt', 'user']))
@@ -124,4 +139,5 @@ export class UserController {
     );
     return response;
   }
+  
 }

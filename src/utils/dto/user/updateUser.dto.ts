@@ -17,7 +17,7 @@ export class UpdateUserDto {
   @ApiProperty({ type: String })
   dateOfBirth: string;
   @ApiProperty({ type: String, enum: UserType })
-  type: UserType;
+  _type: UserType;
   @ApiProperty({ type: String })
   city: string;
   @ApiProperty({ type: String })
