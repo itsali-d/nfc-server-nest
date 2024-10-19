@@ -20,6 +20,7 @@ import {
   UpdateUserDto,
   ForgetPasswordDto,
   VerifyOtpDto,
+  AddReviewDto,
 } from 'src/utils';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -81,13 +82,7 @@ export class UserController {
     });
     return response;
   }
-  @ApiBearerAuth()
-  @Get(':id')
-  @UseGuards(DynamicAuthGuard(['jwt', 'user']))
-  async findOne(@Param('id') id: string) {
-    const response = await this.userService.findOne(id);
-    return response;
-  }
+ 
   @ApiBearerAuth()
   @Patch('add-contact')
   @UseGuards(DynamicAuthGuard(['user']))
@@ -139,5 +134,25 @@ export class UserController {
     );
     return response;
   }
-  
+  @ApiBearerAuth()
+  @Post('add-review')
+  @UseGuards(DynamicAuthGuard(['user']))
+  async addReview(@Body() body: AddReviewDto) {
+    const response = await this.userService.createReview(body);
+    return response;
+  }
+  @ApiBearerAuth()
+  @Get('reviews')
+  @UseGuards(DynamicAuthGuard(['user']))
+  async getReviews(@Query('id') id: string) {
+    const response = await this.userService.getReviews(id);
+    return response;
+  }
+  @ApiBearerAuth()
+  @Get(':id')
+  @UseGuards(DynamicAuthGuard(['jwt', 'user']))
+  async findOne(@Param('id') id: string) {
+    const response = await this.userService.findOne(id);
+    return response;
+  }
 }
