@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import * as nodemailer from 'nodemailer';
 import {
   AddOrRemoveSocialMediaDto,
   comparePassword,
@@ -20,12 +21,25 @@ import {
 
 @Injectable()
 export class UserService {
+  private transporter;
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
-  ) {}
+  ) {
+    this.transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      host: 'smtp.gmail.com', // e.g., smtp.gmail.com
+      port: 465, // use 465 for secure SMTP
+      secure: true, // true for 465, false for other ports
+      auth: {
+        user: 'mohammad.mavia1999@gmail.com', // your email
+        pass: process.env.GMAIL_PASSWORD, // your email password
+      },
+    });
+  }
   private MESSAGES = generateMessage('User');
   private StatusCode: number = 200;
+
   async signup(createUserDto: SignUpUserDto) {
     try {
       const exists = await this.userModel.findOne({
@@ -223,8 +237,15 @@ export class UserService {
         },
         { new: true },
       );
-      return new Response(this.StatusCode, this.MESSAGES.UPDATED, {
-        otp: user.otpCode,
+      const mailOptions = {
+        from: 'mohammad.mavia1999@gmail.com', // sender address
+        to: email, // list of receivers
+        subject: 'Verification Code', // Subject line
+        text: `Your verification code is ${user.otpCode}`, // plain text body
+      };
+      const info = await this.transporter.sendMail(mailOptions);
+      return new Response(this.StatusCode, this.MESSAGES.CREATED, {
+        message: 'Verification code sent successfully!',
       });
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
@@ -235,21 +256,25 @@ export class UserService {
     try {
       let user;
       if (body.isVerification)
-        user = await this.userModel.findOneAndUpdate(
-          { email, otpCode: body.otp },
-          {
-            $set: { verified: true, otpCode: null },
-          },
-          { new: true },
-        );
+        user = await this.userModel
+          .findOneAndUpdate(
+            { email, otpCode: body.otp },
+            {
+              $set: { verified: true, otpCode: null },
+            },
+            { new: true },
+          )
+          .select('-password -otpCode');
       else
-        user = await this.userModel.findOneAndUpdate(
-          { email, otpCode: body.otp },
-          {
-            $set: { forgetPassword: true, otpCode: null },
-          },
-          { new: true },
-        );
+        user = await this.userModel
+          .findOneAndUpdate(
+            { email, otpCode: body.otp },
+            {
+              $set: { forgetPassword: true, otpCode: null },
+            },
+            { new: true },
+          )
+          .select('-password -otpCode');
       if (!user) {
         this.StatusCode = 400;
         throw new Error(this.MESSAGES.INVALID_OTP);
