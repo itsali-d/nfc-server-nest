@@ -119,16 +119,19 @@ export class UserService {
     try {
       const user = await this.userModel
         .findById(id)
-        .select('-password -otpCode');
+        .select('-password -otpCode')
+        .lean();
+      let reviewCount = await this.reviewModel.countDocuments({
+        reviewTo: id,
+      });
       if (!user) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
       }
-      return new Response(
-        (this.StatusCode = 201),
-        this.MESSAGES.RETRIEVE,
-        user,
-      );
+      return new Response((this.StatusCode = 201), this.MESSAGES.RETRIEVE, {
+        ...user,
+        reviewCount,
+      });
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
       return new Response(this.StatusCode, err?.message, err).error();

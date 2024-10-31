@@ -21,6 +21,7 @@ import {
   ForgetPasswordDto,
   VerifyOtpDto,
   AddReviewDto,
+  CategoryType,
 } from 'src/utils';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -82,7 +83,7 @@ export class UserController {
     });
     return response;
   }
- 
+
   @ApiBearerAuth()
   @Patch('add-contact')
   @UseGuards(DynamicAuthGuard(['user']))
@@ -147,6 +148,10 @@ export class UserController {
   async getReviews(@Query('id') id: string) {
     const response = await this.userService.getReviews(id);
     return response;
+  }
+  @Get('categories')
+  async getCategories() {
+    return Object.keys(CategoryType);
   }
   @ApiBearerAuth()
   @Get(':id')
