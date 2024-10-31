@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   AddOrRemoveContactDto,
   AddOrRemoveSocialMediaDto,
@@ -21,10 +21,9 @@ import {
   ForgetPasswordDto,
   VerifyOtpDto,
   AddReviewDto,
-  CategoryType,
 } from 'src/utils';
 import { AuthGuard } from '@nestjs/passport';
-
+@ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -72,11 +71,13 @@ export class UserController {
   @ApiBearerAuth()
   // @UseGuards(DynamicAuthGuard(['user']))
   async searchUser(
+    @Query('type') _type: string,
     @Query('category') category: string,
     @Query('rating') rating: number,
     @Query('city') city: string,
   ) {
     const response = await this.userService.getFilterUsers({
+      _type,
       category,
       rating,
       city,
@@ -148,10 +149,6 @@ export class UserController {
   async getReviews(@Query('id') id: string) {
     const response = await this.userService.getReviews(id);
     return response;
-  }
-  @Get('categories')
-  async getCategories() {
-    return Object.keys(CategoryType);
   }
   @ApiBearerAuth()
   @Get(':id')

@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Mongoose, Types } from 'mongoose';
-import { CategoryType, UserType } from '../dto';
+import { Category } from './category.schema';
+import { UserType } from '../dto';
 @Schema()
 export class SocialMedia {
   @Prop({ type: String })
@@ -35,8 +36,8 @@ export class User extends Document {
   profilePic: string;
   @Prop({ type: String })
   bio: string;
-  @Prop({ type: String, enum: CategoryType })
-  category: CategoryType;
+  @Prop({ type: Types.ObjectId, ref: Category.name })
+  category: Types.ObjectId;
 
   @Prop({ type: String, required: true })
   password: string;

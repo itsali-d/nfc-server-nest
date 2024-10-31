@@ -6,11 +6,7 @@ export enum UserType {
   PERSONAL = 'PERSONAL',
   BUSINESS = 'BUSINESS',
 }
-export enum CategoryType {
-  RESTAURANT = 'RESTAURANT',
-  MEDICAL_CARE = 'MEDICAL_CARE',
-  HOTEL = 'HOTEL',
-}
+
 export class UpdateUserDto {
   @ApiProperty({ type: String, required: true })
   name: string;
@@ -30,6 +26,6 @@ export class UpdateUserDto {
   profilePic: string;
   @ApiProperty({ type: String })
   bio: string;
-  @ApiProperty({ type: String, enum: CategoryType })
-  category: CategoryType;
+  @ApiProperty({ type: String,  })
+  category: string;
 }

@@ -2,7 +2,7 @@ export const generateMessage = (resource: string) => {
   return {
     CREATED: `${resource} created successfully!`,
     RETRIEVE: `${resource} retrieved successfully!`,
-    RETRIEVEALL: `${resource}s retrieved successfully!`,
+    RETRIEVEALL: `${resource} retrieved successfully!`,
     UPDATED: `${resource} updated successfully!`,
     DELETED: `${resource} deleted successfully!`,
     NOTFOUND: `${resource} not found!`,

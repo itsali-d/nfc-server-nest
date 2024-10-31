@@ -358,9 +358,10 @@ export class UserService {
   }
   async getFilterUsers(filter) {
     try {
-      let { category, rating, city } = filter;
+      let { category, rating, city, _type } = filter;
       let users = await this.userModel
         .find({
+          ...(_type && { _type }),
           ...(category && { category }), // Include 'category' only if it's provided
           ...(city && { city }),
         })

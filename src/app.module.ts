@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { DefaultSeed } from 'src/seeder/default.seeder';
 import { OrgUser, OrgUserSchema } from 'src/utils';
 import { AssetsModule } from './assets/assets.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AssetsModule } from './assets/assets.module';
     MongooseModule.forFeature([{ name: OrgUser.name, schema: OrgUserSchema }]),
     UserModule,
     AssetsModule,
+    CategoryModule,
 
   ],
   controllers: [AppController],
