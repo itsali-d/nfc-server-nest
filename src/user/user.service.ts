@@ -73,9 +73,12 @@ export class UserService {
   }
   async login(loginUserDto: LoginUserDto) {
     try {
-      const exists = await this.userModel.findOne({
-        email: loginUserDto.email,
-      });
+      const exists = await this.userModel
+        .findOne({
+          email: loginUserDto.email,
+        })
+        .populate('category')
+        .populate('contacts', '-password -otpCode');
       if (!exists) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
@@ -105,7 +108,11 @@ export class UserService {
   }
   async getUsers() {
     try {
-      let user = await this.userModel.find({}).select('-password -otpCode');
+      let user = await this.userModel
+        .find({})
+        .select('-password -otpCode')
+        .populate('category')
+        .populate('contacts', '-password -otpCode');
 
       return new Response((this.StatusCode = 200), this.MESSAGES.RETRIEVEALL, {
         user,
@@ -119,6 +126,8 @@ export class UserService {
     try {
       const user = await this.userModel
         .findById(id)
+        .populate('category')
+        .populate('contacts', '-password -otpCode')
         .select('-password -otpCode')
         .lean();
       let reviewCount = await this.reviewModel.countDocuments({
@@ -146,6 +155,8 @@ export class UserService {
           { $set: { ...updateUserDto, updatedAt: Date.now() } },
           { new: true },
         )
+        .populate('category')
+        .populate('contacts', '-password -otpCode')
         .select('-password -otpCode');
       if (!user) {
         this.StatusCode = 404;
@@ -282,7 +293,9 @@ export class UserService {
         this.StatusCode = 400;
         throw new Error(this.MESSAGES.INVALID_OTP);
       }
-      return new Response(this.StatusCode, this.MESSAGES.UPDATED, user);
+      return new Response(this.StatusCode, this.MESSAGES.VALID_OTP, {
+        message: 'OTP Verified',
+      });
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
       return new Response(this.StatusCode, err?.message, err).error();
@@ -366,7 +379,9 @@ export class UserService {
           ...(city && { city }),
         })
         .sort({ rating })
-        .select('-password -otpCode');
+        .select('-password -otpCode')
+        .populate('category')
+        .populate('contacts', '-password -otpCode');
       return new Response((this.StatusCode = 200), this.MESSAGES.RETRIEVEALL, {
         users,
       });

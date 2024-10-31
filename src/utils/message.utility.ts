@@ -18,6 +18,7 @@ export const generateMessage = (resource: string) => {
     ALREADY_APPROVED: 'Already Approved!',
     UNAUTHORIZED: 'Unauthorized!',
     INVALID_OTP: 'Invalid OTP!',
+    VALID_OTP: 'OTP is valid!',
   };
 };
 
