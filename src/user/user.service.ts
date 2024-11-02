@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as nodemailer from 'nodemailer';
 import {
   AddOrRemoveSocialMediaDto,
@@ -125,7 +125,7 @@ export class UserService {
   async findOne(id: string) {
     try {
       const user = await this.userModel
-        .findById(id)
+        .findById(new Types.ObjectId(id))
         .populate('category')
         .populate('contacts', '-password -otpCode')
         .select('-password -otpCode')
@@ -171,6 +171,12 @@ export class UserService {
   }
   async addContact(id: string, contactId: string) {
     try {
+      let user = await this.userModel.findById(contactId);
+      if (!user) {
+        this.StatusCode = 404;
+        throw new Error(this.MESSAGES.NOTFOUND);
+      }
+
       const updated = await this.userModel.findByIdAndUpdate(
         id,
         {
@@ -188,6 +194,11 @@ export class UserService {
   }
   async removeContact(id: string, contactId: string) {
     try {
+      let user = await this.userModel.findById(contactId);
+      if (!user) {
+        this.StatusCode = 404;
+        throw new Error(this.MESSAGES.NOTFOUND);
+      }
       const updated = await this.userModel.findByIdAndUpdate(
         id,
         {

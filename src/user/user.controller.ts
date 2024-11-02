@@ -152,7 +152,7 @@ export class UserController {
   }
   @ApiBearerAuth()
   @Get(':id')
-  @UseGuards(DynamicAuthGuard(['jwt', 'user']))
+  // @UseGuards(DynamicAuthGuard(['jwt', 'user']))
   async findOne(@Param('id') id: string) {
     const response = await this.userService.findOne(id);
     return response;
