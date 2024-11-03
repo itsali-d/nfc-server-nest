@@ -20,8 +20,10 @@ export class User extends Document {
   dateOfBirth: string;
   @Prop({ type: String, unique: true, required: true })
   email: string;
-  @Prop({})
+  @Prop()
   otpCode: number;
+  @Prop()
+  forgetPasswordOtp: number;
   @Prop({ type: String, enum: UserType })
   _type: UserType;
   @Prop({ type: String })

@@ -21,6 +21,8 @@ import {
   ForgetPasswordDto,
   VerifyOtpDto,
   AddReviewDto,
+  SendOtpForgetPasswordDto,
+  VerifyOtpForgetPasswordDto,
 } from 'src/utils';
 import { AuthGuard } from '@nestjs/passport';
 @ApiTags('user')
@@ -44,20 +46,26 @@ export class UserController {
   async login(@Body() loginUserDto: LoginUserDto) {
     return this.userService.login(loginUserDto);
   }
+
   @Get('send-otp')
   @ApiBearerAuth()
   @UseGuards(DynamicAuthGuard(['user']))
-  async sendOTP(
-    @Req() req: any,
-    @Query('isVerification') isVerification: boolean,
-  ) {
-    return this.userService.sendOtp(req.user.email, isVerification);
+  async sendOTP(@Req() req: any) {
+    return this.userService.sendOtp(req.user.email);
+  }
+  @Post('send-otp-forget-password')
+  async sendOtpForgetPassword(@Body() body: SendOtpForgetPasswordDto) {
+    return this.userService.sendOtpForgetPassword(body.email);
   }
   @Post('verify-otp')
   @ApiBearerAuth()
   @UseGuards(DynamicAuthGuard(['user']))
   async verifyOTP(@Req() req: any, @Body() body: VerifyOtpDto) {
     return this.userService.verifyOtp(req.user.email, body);
+  }
+  @Post('verify-otp-forget-password')
+  async verifyOTPForgetPassword(@Body() body: VerifyOtpForgetPasswordDto) {
+    return this.userService.verifyOtpForgetPassword(body);
   }
 
   @ApiBearerAuth()
@@ -119,6 +127,11 @@ export class UserController {
     );
     return response;
   }
+  @Patch('forget-password')
+  async forgetPassword(@Body() body: ForgetPasswordDto) {
+    const response = await this.userService.forgetPassword(body);
+    return response;
+  }
   @ApiBearerAuth()
   @Patch(':id')
   @UseGuards(DynamicAuthGuard(['jwt', 'user']))
@@ -126,16 +139,7 @@ export class UserController {
     const response = await this.userService.update(id, updatedUser);
     return response;
   }
-  @ApiBearerAuth()
-  @Patch('forget-password')
-  @UseGuards(DynamicAuthGuard(['user']))
-  async forgetPassword(@Body() body: ForgetPasswordDto, @Req() req: any) {
-    const response = await this.userService.forgetPassword(
-      req.user.email,
-      body,
-    );
-    return response;
-  }
+
   @ApiBearerAuth()
   @Post('add-review')
   @UseGuards(DynamicAuthGuard(['user']))

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { response } from 'express';
 import { Model, Types } from 'mongoose';
 import * as nodemailer from 'nodemailer';
 import {
@@ -17,6 +18,7 @@ import {
   ForgetPasswordDto,
   Review,
   AddReviewDto,
+  VerifyOtpForgetPasswordDto,
 } from 'src/utils';
 
 @Injectable()
@@ -68,7 +70,7 @@ export class UserService {
       });
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
-      return new Response(this.StatusCode, err?.message, err).error();
+      return new Response(this.StatusCode, err?.message, err);
     }
   }
   async login(loginUserDto: LoginUserDto) {
@@ -250,14 +252,13 @@ export class UserService {
       return new Response(this.StatusCode, err?.message, err).error();
     }
   }
-  async sendOtp(email: string, isVerification: boolean = true) {
+  async sendOtp(email: string) {
     try {
       const user = await this.userModel.findOneAndUpdate(
         { email },
         {
           $set: {
             otpCode: Math.floor(100000 + Math.random() * 900000),
-            forgetPassword: isVerification ? false : true,
           },
         },
         { new: true },
@@ -269,7 +270,34 @@ export class UserService {
         text: `Your verification code is ${user.otpCode}`, // plain text body
       };
       const info = await this.transporter.sendMail(mailOptions);
-      return new Response(this.StatusCode, this.MESSAGES.CREATED, {
+      return new Response(this.StatusCode, this.MESSAGES.RETRIEVE, {
+        message: 'Verification code sent successfully!',
+      });
+    } catch (err: any) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err).error();
+    }
+  }
+  async sendOtpForgetPassword(email: string) {
+    try {
+      const user = await this.userModel.findOneAndUpdate(
+        { email },
+        {
+          $set: {
+            forgetPasswordOtp: Math.floor(100000 + Math.random() * 900000),
+            forgetPassword: true,
+          },
+        },
+        { new: true },
+      );
+      const mailOptions = {
+        from: 'mohammad.mavia1999@gmail.com', // sender address
+        to: email, // list of receivers
+        subject: 'Verification Code', // Subject line
+        text: `Your verification code is ${user.forgetPasswordOtp}`, // plain text body
+      };
+      const info = await this.transporter.sendMail(mailOptions);
+      return new Response(this.StatusCode, this.MESSAGES.RETRIEVE, {
         message: 'Verification code sent successfully!',
       });
     } catch (err: any) {
@@ -280,26 +308,15 @@ export class UserService {
   async verifyOtp(email: string, body: VerifyOtpDto) {
     try {
       let user;
-      if (body.isVerification)
-        user = await this.userModel
-          .findOneAndUpdate(
-            { email, otpCode: body.otp },
-            {
-              $set: { verified: true, otpCode: null },
-            },
-            { new: true },
-          )
-          .select('-password -otpCode');
-      else
-        user = await this.userModel
-          .findOneAndUpdate(
-            { email, otpCode: body.otp },
-            {
-              $set: { forgetPassword: true, otpCode: null },
-            },
-            { new: true },
-          )
-          .select('-password -otpCode');
+      user = await this.userModel
+        .findOneAndUpdate(
+          { email, otpCode: body.otp },
+          {
+            $set: { verified: true, otpCode: null },
+          },
+          { new: true },
+        )
+        .select('-password -otpCode');
       if (!user) {
         this.StatusCode = 400;
         throw new Error(this.MESSAGES.INVALID_OTP);
@@ -312,12 +329,48 @@ export class UserService {
       return new Response(this.StatusCode, err?.message, err).error();
     }
   }
-  async forgetPassword(email: string, body: ForgetPasswordDto) {
+  async verifyOtpForgetPassword(
+    body: VerifyOtpForgetPasswordDto,
+  ): Promise<Response> {
     try {
+      let user;
+
+      user = await this.userModel
+        .findOne({ email: body.email, forgetPasswordOtp: body.otp })
+        .select('-password -otpCode');
+      if (!user) {
+        return new Response(this.StatusCode, this.MESSAGES.INVALID_OTP, {
+          message: 'OTP Unverified',
+          verified: false,
+        });
+      }
+      return new Response(this.StatusCode, this.MESSAGES.VALID_OTP, {
+        message: 'OTP Verified',
+        verified: true,
+      });
+    } catch (err: any) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err);
+    }
+  }
+  async forgetPassword(body: ForgetPasswordDto) {
+    try {
+      let isVerify = await this.verifyOtpForgetPassword({
+        email: body.email,
+        otp: body.otp,
+      });
+      if (!isVerify.payload.verified) {
+        this.StatusCode = 400;
+        throw new Error(this.MESSAGES.INVALID_OTP);
+      }
       let user = await this.userModel.findOneAndUpdate(
-        { email },
+        { email: body.email },
         {
-          $set: { password: await hashPassword(body.password) },
+          $set: {
+            password: await hashPassword(body.password),
+            forgetPasswordOtp: null,
+            forgetPassword: false,
+          },
         },
         { new: true },
       );
@@ -325,7 +378,9 @@ export class UserService {
         this.StatusCode = 400;
         throw new Error(this.MESSAGES.INVALID_OTP);
       }
-      return new Response(this.StatusCode, this.MESSAGES.UPDATED, user);
+      return new Response(this.StatusCode, this.MESSAGES.UPDATED, {
+        message: 'Password updated successfully!',
+      });
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
       return new Response(this.StatusCode, err?.message, err).error();

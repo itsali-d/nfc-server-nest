@@ -5,3 +5,5 @@ export * from './addOrRemoveContact.dto';
 export * from './addOrRemoveSocial.dto';
 export * from './verifyOtp.dto';
 export * from './forgetPassword.dto';
+export * from './sendOtpForgetPassword.dto';
+export * from './verifyOtpForgetPassword.dto';
