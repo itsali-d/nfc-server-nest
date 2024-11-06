@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateGalleryDto } from './createGallery.dto';
 
-export class UpdateGalleryDto extends PartialType(CreateGalleryDto) {}
+export class UpdateGalleryDto extends PartialType(CreateGalleryDto) {
+    @ApiProperty()
+    _id: string;
+}

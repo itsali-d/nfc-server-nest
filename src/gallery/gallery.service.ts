@@ -8,6 +8,7 @@ import {
   Response,
   UpdateGalleryDto,
   User,
+  DeleteGalleryDto,
 } from 'src/utils';
 
 @Injectable()
@@ -20,6 +21,11 @@ export class GalleryService {
   private StatusCode: number = 200;
   async create(createGalleryDto: CreateGalleryDto) {
     try {
+      let user = await this.userModel.findById(createGalleryDto.userId);
+      if (!user) {
+        this.StatusCode = 404;
+        throw new Error(this.MESSAGES.NOTFOUND);
+      }
       const newGallery = new this.galleryModel(createGalleryDto);
       let gallery = await newGallery.save();
       return new Response((this.StatusCode = 200), this.MESSAGES.CREATED, {
@@ -59,10 +65,17 @@ export class GalleryService {
     }
   }
 
-  async update(id, updateGalleryDto: UpdateGalleryDto) {
+  async update(updateGalleryDto: UpdateGalleryDto) {
     try {
+      let user = await this.userModel.findOne({
+        _id: updateGalleryDto.userId,
+      });
+      if (!user) {
+        this.StatusCode = 404;
+        throw new Error(this.MESSAGES.NOTFOUND);
+      }
       let gallery = await this.galleryModel.findByIdAndUpdate(
-        id,
+        updateGalleryDto._id,
         {
           $set: updateGalleryDto,
         },
@@ -82,9 +95,18 @@ export class GalleryService {
     }
   }
 
-  async remove(id) {
+  async remove(deleteGalleryDto: DeleteGalleryDto) {
     try {
-      let gallery = await this.galleryModel.findByIdAndDelete(id);
+      let user = await this.userModel.findOne({
+        _id: deleteGalleryDto.userId,
+      });
+      if (!user) {
+        this.StatusCode = 404;
+        throw new Error(this.MESSAGES.NOTFOUND);
+      }
+      let gallery = await this.galleryModel.findByIdAndDelete(
+        deleteGalleryDto._id,
+      );
       if (!gallery) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);

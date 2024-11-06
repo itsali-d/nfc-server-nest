@@ -19,6 +19,8 @@ import {
   Review,
   AddReviewDto,
   VerifyOtpForgetPasswordDto,
+  Offer,
+  Gallery,
 } from 'src/utils';
 
 @Injectable()
@@ -27,6 +29,8 @@ export class UserService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
+    @InjectModel(Offer.name) private readonly offerModel: Model<Offer>,
+    @InjectModel(Gallery.name) private readonly galleryModel: Model<Gallery>,
   ) {
     this.transporter = nodemailer.createTransport({
       service: 'Gmail',
@@ -80,7 +84,8 @@ export class UserService {
           email: loginUserDto.email,
         })
         .populate('category')
-        .populate('contacts', '-password -otpCode');
+        .populate('contacts', '-password -otpCode')
+        .lean();
       if (!exists) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
@@ -98,9 +103,11 @@ export class UserService {
       //generate token
       delete exists.password;
       delete exists.otpCode;
+      let gallery = await this.galleryModel.find({ userId: exists._id }).lean();
+      let offer = await this.offerModel.find({ userId: exists._id }).lean();
       const token = generateTokenUser(exists);
       return new Response((this.StatusCode = 200), this.MESSAGES.LOGIN, {
-        user: exists,
+        user: { ...exists, gallery, offer },
         token,
       });
     } catch (err: any) {
@@ -135,6 +142,9 @@ export class UserService {
       let reviewCount = await this.reviewModel.countDocuments({
         reviewTo: id,
       });
+      let gallery = await this.galleryModel.find({ userId: id }).lean();
+      let offer = await this.offerModel.find({ userId: id }).lean();
+
       if (!user) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
@@ -142,6 +152,8 @@ export class UserService {
       return new Response((this.StatusCode = 201), this.MESSAGES.RETRIEVE, {
         ...user,
         reviewCount,
+        gallery,
+        offer,
       });
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
@@ -448,7 +460,8 @@ export class UserService {
         .sort({ rating })
         .select('-password -otpCode')
         .populate('category')
-        .populate('contacts', '-password -otpCode');
+        .populate('contacts', '-password -otpCode')
+        .lean();
       return new Response((this.StatusCode = 200), this.MESSAGES.RETRIEVEALL, {
         users,
       });
