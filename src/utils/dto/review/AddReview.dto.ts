@@ -11,9 +11,5 @@ export class AddReviewDto {
   comment: string;
   @ApiProperty()
   rating: number;
-  @ApiProperty()
-  createdAt: number;
-
-  @ApiProperty()
-  updatedAt: number;
+ 
 }

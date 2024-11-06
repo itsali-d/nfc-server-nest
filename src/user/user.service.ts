@@ -397,7 +397,7 @@ export class UserService {
       let averageRating = await this.reviewModel.aggregate([
         {
           $match: {
-            reviewTo: review.reviewTo,
+            reviewTo: new Types.ObjectId(review.reviewTo),
           },
         },
         {
@@ -407,6 +407,7 @@ export class UserService {
           },
         },
       ]);
+      console.log(averageRating);
       await this.userModel.findByIdAndUpdate(review.reviewTo, {
         $set: { rating: averageRating[0].averageRating },
       });
@@ -425,8 +426,8 @@ export class UserService {
     try {
       let reviews = await this.reviewModel
         .find({ reviewTo })
-        .populate('reviewFrom')
-        .populate('reviewTo');
+        .populate('reviewFrom', '-password -otpCode -forgetPasswordOtp')
+        .populate('reviewTo', '-password -otpCode -forgetPasswordOtp');
       return new Response((this.StatusCode = 200), this.MESSAGES.RETRIEVEALL, {
         reviews,
       });
