@@ -10,7 +10,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   AddOrRemoveContactDto,
   AddOrRemoveSocialMediaDto,
@@ -77,18 +82,26 @@ export class UserController {
   }
   @Get('search-user')
   @ApiBearerAuth()
+  @ApiQuery({ name: 'type', required: false, allowEmptyValue: true })
+  @ApiQuery({ name: 'category', required: false, allowEmptyValue: true })
+  @ApiQuery({ name: 'rating', required: false, allowEmptyValue: true })
+  @ApiQuery({ name: 'city', required: false, allowEmptyValue: true })
+  @ApiQuery({ name: 'search', required: false, allowEmptyValue: true })
   // @UseGuards(DynamicAuthGuard(['user']))
   async searchUser(
+    @Query('search') search: string,
     @Query('type') _type: string,
     @Query('category') category: string,
     @Query('rating') rating: number,
     @Query('city') city: string,
   ) {
+    console.log(search, _type, category, rating, city);
     const response = await this.userService.getFilterUsers({
       _type,
       category,
-      rating,
+      rating: rating ? rating : 1,
       city,
+      search,
     });
     return response;
   }

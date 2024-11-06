@@ -9,6 +9,8 @@ import { DefaultSeed } from 'src/seeder/default.seeder';
 import { OrgUser, OrgUserSchema } from 'src/utils';
 import { AssetsModule } from './assets/assets.module';
 import { CategoryModule } from './category/category.module';
+import { GalleryModule } from './gallery/gallery.module';
+import { OfferModule } from './offer/offer.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { CategoryModule } from './category/category.module';
     UserModule,
     AssetsModule,
     CategoryModule,
+    GalleryModule,
+    OfferModule,
 
   ],
   controllers: [AppController],
