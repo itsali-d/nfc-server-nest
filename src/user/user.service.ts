@@ -103,8 +103,12 @@ export class UserService {
       //generate token
       delete exists.password;
       delete exists.otpCode;
-      let gallery = await this.galleryModel.find({ userId: exists._id }).lean();
-      let offer = await this.offerModel.find({ userId: exists._id }).lean();
+      let gallery = await this.galleryModel
+        .find({ userId: exists._id.toString() })
+        .lean();
+      let offer = await this.offerModel
+        .find({ userId: exists._id.toString() })
+        .lean();
       const token = generateTokenUser(exists);
       return new Response((this.StatusCode = 200), this.MESSAGES.LOGIN, {
         user: { ...exists, gallery, offer },
@@ -142,8 +146,8 @@ export class UserService {
       let reviewCount = await this.reviewModel.countDocuments({
         reviewTo: id,
       });
-      let gallery = await this.galleryModel.find({ userId: id }).lean();
-      let offer = await this.offerModel.find({ userId: id }).lean();
+      let gallery = await this.galleryModel.find({ userId: id.toString() }).lean();
+      let offer = await this.offerModel.find({ userId: id.toString() }).lean();
 
       if (!user) {
         this.StatusCode = 404;

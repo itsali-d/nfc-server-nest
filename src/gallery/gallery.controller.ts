@@ -17,7 +17,7 @@ import { GalleryService } from './gallery.service';
 export class GalleryController {
   constructor(private readonly galleryService: GalleryService) {}
   @Post()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('user'))
   @ApiBearerAuth()
   create(@Body() createGalleryDto: CreateGalleryDto) {
     return this.galleryService.create(createGalleryDto);
@@ -34,14 +34,14 @@ export class GalleryController {
 //   }
 
   @Patch('')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('user'))
   @ApiBearerAuth()
   update(@Body() updateGalleryDto: UpdateGalleryDto) {
     return this.galleryService.update(updateGalleryDto);
   }
 
   @Delete('')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('user'))
   @ApiBearerAuth()
   remove(@Body() deleteGalleryDto: DeleteGalleryDto) {
     return this.galleryService.remove(deleteGalleryDto);

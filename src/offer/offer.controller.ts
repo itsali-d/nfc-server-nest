@@ -17,7 +17,7 @@ import {
   export class OfferController {
     constructor(private readonly offerService: OfferService) {}
     @Post()
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('user'))
     @ApiBearerAuth()
     create(@Body() createOfferDto: CreateOfferDto) {
       return this.offerService.create(createOfferDto);
@@ -34,14 +34,14 @@ import {
   //   }
   
     @Patch('')
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('user'))
     @ApiBearerAuth()
     update(@Body() updateOfferDto: UpdateOfferDto) {
       return this.offerService.update(updateOfferDto);
     }
   
     @Delete('')
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('user'))
     @ApiBearerAuth()
     remove(@Body() deleteOfferDto: DeleteOfferDto) {
       return this.offerService.remove(deleteOfferDto);

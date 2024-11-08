@@ -24,7 +24,7 @@ import { DynamicAuthGuard } from 'src/utils/guards/dynamic-auth.guard';
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 @ApiBearerAuth()
-  @UseGuards(DynamicAuthGuard(['jwt', 'user']))
+  // @UseGuards(DynamicAuthGuard(['jwt', 'user']))
   @Post('/upload')
   @ApiOperation({
     summary: 'Create Assets',
