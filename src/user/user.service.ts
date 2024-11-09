@@ -306,6 +306,10 @@ export class UserService {
         },
         { new: true },
       );
+      if(!user){
+        this.StatusCode = 404;
+        throw new Error(this.MESSAGES.NOTFOUND);
+      }
       const mailOptions = {
         from: 'mohammad.mavia1999@gmail.com', // sender address
         to: email, // list of receivers
