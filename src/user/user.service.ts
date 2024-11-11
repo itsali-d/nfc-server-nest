@@ -44,6 +44,7 @@ export class UserService {
     });
   }
   private MESSAGES = generateMessage('User');
+  private REVIEW_MESSAGES = generateMessage('Review');
   private StatusCode: number = 200;
 
   async signup(createUserDto: SignUpUserDto) {
@@ -146,7 +147,9 @@ export class UserService {
       let reviewCount = await this.reviewModel.countDocuments({
         reviewTo: id,
       });
-      let gallery = await this.galleryModel.find({ userId: id.toString() }).lean();
+      let gallery = await this.galleryModel
+        .find({ userId: id.toString() })
+        .lean();
       let offer = await this.offerModel.find({ userId: id.toString() }).lean();
 
       if (!user) {
@@ -306,7 +309,7 @@ export class UserService {
         },
         { new: true },
       );
-      if(!user){
+      if (!user) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
       }
@@ -434,7 +437,7 @@ export class UserService {
 
       return new Response(
         (this.StatusCode = 201),
-        this.MESSAGES.CREATED,
+        this.REVIEW_MESSAGES.CREATED,
         createdReview,
       );
     } catch (err: any) {
@@ -448,7 +451,7 @@ export class UserService {
         .find({ reviewTo })
         .populate('reviewFrom', '-password -otpCode -forgetPasswordOtp')
         .populate('reviewTo', '-password -otpCode -forgetPasswordOtp');
-      return new Response((this.StatusCode = 200), this.MESSAGES.RETRIEVEALL, {
+      return new Response((this.StatusCode = 200), this.REVIEW_MESSAGES.RETRIEVEALL, {
         reviews,
       });
     } catch (err) {

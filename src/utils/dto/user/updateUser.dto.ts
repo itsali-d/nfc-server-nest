@@ -12,6 +12,8 @@ export class UpdateUserDto {
   name: string;
   @ApiProperty({ type: String })
   dateOfBirth: string;
+  @ApiProperty({ type: String })
+  cover: string;
   @ApiProperty({ type: String, enum: UserType })
   _type: UserType;
   @ApiProperty({ type: String })
@@ -26,6 +28,6 @@ export class UpdateUserDto {
   profilePic: string;
   @ApiProperty({ type: String })
   bio: string;
-  @ApiProperty({ type: String,  })
+  @ApiProperty({ type: String })
   category: string;
 }

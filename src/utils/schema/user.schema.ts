@@ -27,6 +27,8 @@ export class User extends Document {
   @Prop({ type: String, enum: UserType })
   _type: UserType;
   @Prop({ type: String })
+  cover: string;
+  @Prop({ type: String })
   city: string;
   @Prop({ type: String })
   whatsappBusiness: string;
