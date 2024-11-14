@@ -206,7 +206,7 @@ export class UserService {
         {
           new: true,
         },
-      );
+      ).populate('contacts');
       return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
@@ -228,7 +228,7 @@ export class UserService {
         {
           new: true,
         },
-      );
+      ).populate('contacts');
       return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
