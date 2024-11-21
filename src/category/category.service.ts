@@ -19,7 +19,7 @@ export class CategoryService {
   async create(createCategoryDto: CreateCategoryDto) {
     try {
       const newCategory = new this.categoryModel(createCategoryDto);
-      let category = await newCategory.save();
+      const category = await newCategory.save();
       return new Response((this.StatusCode = 200), this.MESSAGES.CREATED, {
         category,
       });
@@ -31,7 +31,7 @@ export class CategoryService {
 
   async findAll() {
     try {
-      let categories = await this.categoryModel.find({});
+      const categories = await this.categoryModel.find({});
       return new Response((this.StatusCode = 200), this.MESSAGES.RETRIEVEALL, {
         categories,
       });
@@ -43,7 +43,7 @@ export class CategoryService {
 
   async findOne(id) {
     try {
-      let category = await this.categoryModel.findById(id);
+      const category = await this.categoryModel.findById(id);
       if (!category) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
@@ -59,7 +59,7 @@ export class CategoryService {
 
   async update(id, updateCategoryDto: UpdateCategoryDto) {
     try {
-      let category = await this.categoryModel.findByIdAndUpdate(
+      const category = await this.categoryModel.findByIdAndUpdate(
         id,
         {
           $set: updateCategoryDto,
@@ -82,7 +82,7 @@ export class CategoryService {
 
   async remove(id) {
     try {
-      let category = await this.categoryModel.findByIdAndDelete(id);
+      const category = await this.categoryModel.findByIdAndDelete(id);
       if (!category) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);

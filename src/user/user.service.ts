@@ -1,6 +1,7 @@
+/* eslint-disable prefer-const */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { response } from 'express';
+
 import { Model, Types } from 'mongoose';
 import * as nodemailer from 'nodemailer';
 import {
@@ -104,10 +105,10 @@ export class UserService {
       //generate token
       delete exists.password;
       delete exists.otpCode;
-      let gallery = await this.galleryModel
+      const gallery = await this.galleryModel
         .find({ userId: exists._id.toString() })
         .lean();
-      let offer = await this.offerModel
+      const offer = await this.offerModel
         .find({ userId: exists._id.toString() })
         .lean();
       const token = generateTokenUser(exists);
@@ -122,7 +123,7 @@ export class UserService {
   }
   async getUsers() {
     try {
-      let user = await this.userModel
+      const user = await this.userModel
         .find({})
         .select('-password -otpCode')
         .populate('category')
@@ -144,13 +145,15 @@ export class UserService {
         .populate('contacts', '-password -otpCode')
         .select('-password -otpCode')
         .lean();
-      let reviewCount = await this.reviewModel.countDocuments({
+      const reviewCount = await this.reviewModel.countDocuments({
         reviewTo: id,
       });
-      let gallery = await this.galleryModel
+      const gallery = await this.galleryModel
         .find({ userId: id.toString() })
         .lean();
-      let offer = await this.offerModel.find({ userId: id.toString() }).lean();
+      const offer = await this.offerModel
+        .find({ userId: id.toString() })
+        .lean();
 
       if (!user) {
         this.StatusCode = 404;
@@ -192,21 +195,23 @@ export class UserService {
   }
   async addContact(id: string, contactId: string) {
     try {
-      let user = await this.userModel.findById(contactId);
+      const user = await this.userModel.findById(contactId);
       if (!user) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
       }
 
-      const updated = await this.userModel.findByIdAndUpdate(
-        id,
-        {
-          $addToSet: { contacts: contactId },
-        },
-        {
-          new: true,
-        },
-      ).populate('contacts');
+      const updated = await this.userModel
+        .findByIdAndUpdate(
+          id,
+          {
+            $addToSet: { contacts: contactId },
+          },
+          {
+            new: true,
+          },
+        )
+        .populate('contacts');
       return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
@@ -215,20 +220,22 @@ export class UserService {
   }
   async removeContact(id: string, contactId: string) {
     try {
-      let user = await this.userModel.findById(contactId);
+      const user = await this.userModel.findById(contactId);
       if (!user) {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
       }
-      const updated = await this.userModel.findByIdAndUpdate(
-        id,
-        {
-          $pull: { contacts: contactId },
-        },
-        {
-          new: true,
-        },
-      ).populate('contacts');
+      const updated = await this.userModel
+        .findByIdAndUpdate(
+          id,
+          {
+            $pull: { contacts: contactId },
+          },
+          {
+            new: true,
+          },
+        )
+        .populate('contacts');
       return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
@@ -288,6 +295,7 @@ export class UserService {
         subject: 'Verification Code', // Subject line
         text: `Your verification code is ${user.otpCode}`, // plain text body
       };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const info = await this.transporter.sendMail(mailOptions);
       return new Response(this.StatusCode, this.MESSAGES.RETRIEVE, {
         message: 'Verification code sent successfully!',
@@ -319,6 +327,7 @@ export class UserService {
         subject: 'Verification Code', // Subject line
         text: `Your verification code is ${user.forgetPasswordOtp}`, // plain text body
       };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const info = await this.transporter.sendMail(mailOptions);
       return new Response(this.StatusCode, this.MESSAGES.RETRIEVE, {
         message: 'Verification code sent successfully!',
@@ -378,7 +387,7 @@ export class UserService {
   }
   async forgetPassword(body: ForgetPasswordDto) {
     try {
-      let isVerify = await this.verifyOtpForgetPassword({
+      const isVerify = await this.verifyOtpForgetPassword({
         email: body.email,
         otp: body.otp,
       });
@@ -386,7 +395,7 @@ export class UserService {
         this.StatusCode = 400;
         throw new Error(this.MESSAGES.INVALID_OTP);
       }
-      let user = await this.userModel.findOneAndUpdate(
+      const user = await this.userModel.findOneAndUpdate(
         { email: body.email },
         {
           $set: {
@@ -417,7 +426,7 @@ export class UserService {
         updatedAt: Date.now(),
       });
       const createdReview = await newReview.save();
-      let averageRating = await this.reviewModel.aggregate([
+      const averageRating = await this.reviewModel.aggregate([
         {
           $match: {
             reviewTo: new Types.ObjectId(review.reviewTo),
@@ -445,15 +454,37 @@ export class UserService {
       return new Response(this.StatusCode, err?.message, err).error();
     }
   }
+
+  async deleteAccunt(id: string) {
+    try {
+      const userExist = await this.userModel.findById(id);
+      if (!userExist) {
+        this.StatusCode = 404;
+        throw new Error(this.MESSAGES.NOTFOUND);
+      }
+      const deleteAccount = await this.userModel.findByIdAndDelete(id);
+      return new Response((this.StatusCode = 200), this.MESSAGES.DELETED, {
+        deleteAccount,
+      });
+    } catch (err) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err).error();
+    }
+  }
+
   async getReviews(reviewTo: string) {
     try {
-      let reviews = await this.reviewModel
+      const reviews = await this.reviewModel
         .find({ reviewTo })
         .populate('reviewFrom', '-password -otpCode -forgetPasswordOtp')
         .populate('reviewTo', '-password -otpCode -forgetPasswordOtp');
-      return new Response((this.StatusCode = 200), this.REVIEW_MESSAGES.RETRIEVEALL, {
-        reviews,
-      });
+      return new Response(
+        (this.StatusCode = 200),
+        this.REVIEW_MESSAGES.RETRIEVEALL,
+        {
+          reviews,
+        },
+      );
     } catch (err) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
       return new Response(this.StatusCode, err?.message, err).error();
@@ -461,8 +492,8 @@ export class UserService {
   }
   async getFilterUsers(filter) {
     try {
-      let { category, rating, city, _type } = filter;
-      let users = await this.userModel
+      const { category, rating, city, _type } = filter;
+      const users = await this.userModel
         .find({
           ...(_type && { _type }),
           ...(category && { category }), // Include 'category' only if it's provided
