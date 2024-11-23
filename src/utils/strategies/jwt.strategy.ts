@@ -10,6 +10,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { generateMessage } from 'src/utils/message.utility';
 import { OrgUser } from '../schema';
 
+interface JwtOrgUser {
+  _id: string;
+  name: string;
+  email: string;
+  password: string;
+  isDisable: boolean;
+  isOnline: boolean;
+  createdAt: number;
+  updatedAt: number;
+  verified: boolean;
+  role: string;
+}
+
 @Injectable()
 export class JwtStrategyOrgUser extends PassportStrategy(Strategy) {
   constructor(
@@ -22,19 +35,18 @@ export class JwtStrategyOrgUser extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload) {
+  async validate(payload: { _id: string }): Promise<JwtOrgUser> {
     const user = await this.userModel
-      .findOne({
-        _id: payload._id,
-      })
-      .lean();
-    // .populate('role');
+      .findOne({ _id: payload._id })
+      .lean<OrgUser>();
+
     if (user) {
       if (user.isDisable) {
         throw new BadRequestException(generateMessage('User').IS_DISABLED);
       }
-      return { ...user, role: OrgUser.name };
+      return { ...user, _id: String(user._id), role: OrgUser.name };
     }
+
     throw new UnauthorizedException();
   }
 }
