@@ -1,1 +1,1 @@
-export * from './dynamic-auth.guard'
+export * from './dynamic-auth.guard';
