@@ -44,6 +44,7 @@ export class UserController {
   async signup(@Body() signUpUserDto: SignUpUserDto) {
     return this.userService.signup(signUpUserDto);
   }
+  @Post('google-signin')
   async googleSignIn(@Body() signUpGoogleDto: GoogleSignInDto) {
     return this.userService.googleSignIn(signUpGoogleDto);
   }
