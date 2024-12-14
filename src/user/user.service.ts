@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { response } from 'express';
+import { OAuth2Client } from 'google-auth-library';
 import { Model, Types } from 'mongoose';
 import * as nodemailer from 'nodemailer';
 import {
@@ -26,12 +27,14 @@ import {
 @Injectable()
 export class UserService {
   private transporter;
+  private readonly googleClient: OAuth2Client;
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
     @InjectModel(Offer.name) private readonly offerModel: Model<Offer>,
     @InjectModel(Gallery.name) private readonly galleryModel: Model<Gallery>,
   ) {
+    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Replace with your client ID
     this.transporter = nodemailer.createTransport({
       service: 'Gmail',
       host: 'smtp.gmail.com', // e.g., smtp.gmail.com
@@ -46,7 +49,42 @@ export class UserService {
   private MESSAGES = generateMessage('User');
   private REVIEW_MESSAGES = generateMessage('Review');
   private StatusCode: number = 200;
+  async googleSignIn(body) {
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: body.idToken,
+        audience: process.env.GOOGLE_CLIENT_ID, // Replace with your client ID
+      });
+      const payload = ticket.getPayload();
+      const { sub, email, name, picture } = payload;
+      const exists = await this.userModel.findOne({
+        email,
+      });
+      if (exists) {
+        const token = generateTokenUser(exists);
+        return new Response((this.StatusCode = 200), this.MESSAGES.LOGIN, {
+          user: exists,
+          token,
+        });
+      }
+      const createdUser = await this.userModel.create({
+        name,
+        profilePic: picture,
+        email,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      const token = generateTokenUser(createdUser);
 
+      return new Response((this.StatusCode = 201), this.MESSAGES.CREATED, {
+        user: createdUser,
+        token,
+      });
+    } catch (err) {
+      this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
+      return new Response(this.StatusCode, err?.message, err).error();
+    }
+  }
   async signup(createUserDto: SignUpUserDto) {
     try {
       const exists = await this.userModel.findOne({
@@ -198,15 +236,17 @@ export class UserService {
         throw new Error(this.MESSAGES.NOTFOUND);
       }
 
-      const updated = await this.userModel.findByIdAndUpdate(
-        id,
-        {
-          $addToSet: { contacts: contactId },
-        },
-        {
-          new: true,
-        },
-      ).populate('contacts');
+      const updated = await this.userModel
+        .findByIdAndUpdate(
+          id,
+          {
+            $addToSet: { contacts: contactId },
+          },
+          {
+            new: true,
+          },
+        )
+        .populate('contacts');
       return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
@@ -220,15 +260,17 @@ export class UserService {
         this.StatusCode = 404;
         throw new Error(this.MESSAGES.NOTFOUND);
       }
-      const updated = await this.userModel.findByIdAndUpdate(
-        id,
-        {
-          $pull: { contacts: contactId },
-        },
-        {
-          new: true,
-        },
-      ).populate('contacts');
+      const updated = await this.userModel
+        .findByIdAndUpdate(
+          id,
+          {
+            $pull: { contacts: contactId },
+          },
+          {
+            new: true,
+          },
+        )
+        .populate('contacts');
       return new Response(this.StatusCode, this.MESSAGES.UPDATED, updated);
     } catch (err: any) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
@@ -451,9 +493,13 @@ export class UserService {
         .find({ reviewTo })
         .populate('reviewFrom', '-password -otpCode -forgetPasswordOtp')
         .populate('reviewTo', '-password -otpCode -forgetPasswordOtp');
-      return new Response((this.StatusCode = 200), this.REVIEW_MESSAGES.RETRIEVEALL, {
-        reviews,
-      });
+      return new Response(
+        (this.StatusCode = 200),
+        this.REVIEW_MESSAGES.RETRIEVEALL,
+        {
+          reviews,
+        },
+      );
     } catch (err) {
       this.StatusCode = this.StatusCode == 200 ? 500 : this.StatusCode;
       return new Response(this.StatusCode, err?.message, err).error();

@@ -43,7 +43,7 @@ export class User extends Document {
   @Prop({ type: Types.ObjectId, ref: Category.name })
   category: Types.ObjectId;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   password: string;
 
   @Prop({ type: Number })

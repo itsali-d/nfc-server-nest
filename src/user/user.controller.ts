@@ -28,6 +28,7 @@ import {
   AddReviewDto,
   SendOtpForgetPasswordDto,
   VerifyOtpForgetPasswordDto,
+  GoogleSignInDto,
 } from 'src/utils';
 import { AuthGuard } from '@nestjs/passport';
 @ApiTags('user')
@@ -42,6 +43,9 @@ export class UserController {
   })
   async signup(@Body() signUpUserDto: SignUpUserDto) {
     return this.userService.signup(signUpUserDto);
+  }
+  async googleSignIn(@Body() signUpGoogleDto: GoogleSignInDto) {
+    return this.userService.googleSignIn(signUpGoogleDto);
   }
   @Post('login')
   @ApiOperation({
