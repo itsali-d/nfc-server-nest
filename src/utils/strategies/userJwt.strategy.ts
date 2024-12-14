@@ -1,13 +1,24 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import {
-  Injectable,
-  UnauthorizedException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../schema';
+
+interface JwtPayload {
+  _id: string;
+}
+
+interface ValidatedUser {
+  _id: string;
+  role: string;
+  name?: string;
+  email?: string;
+  dateOfBirth?: string;
+  otpCode?: number;
+  forgetPasswordOtp?: number;
+  [key: string]: any; // Allow additional dynamic properties
+}
 
 @Injectable()
 export class JwtStrategyUser extends PassportStrategy(Strategy, 'user') {
@@ -19,22 +30,27 @@ export class JwtStrategyUser extends PassportStrategy(Strategy, 'user') {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: process.env.TOKEN_SECRET_USER,
     });
+
+    // Ensure TOKEN_SECRET_USER is defined
+    if (!process.env.TOKEN_SECRET_USER) {
+      throw new Error(
+        'TOKEN_SECRET_USER is not set in the environment variables',
+      );
+    }
   }
 
-  async validate(payload) {
-    console.log(payload);
+  async validate(payload: JwtPayload): Promise<ValidatedUser> {
+    console.log('Payload:', payload);
+
     const user = await this.userModel
-      .findOne({
-        _id: payload._id,
-      })
-      .lean();
-    // .populate('role');
+      .findOne({ _id: payload._id })
+      .lean<User>(); // Explicitly specify the return type for lean()
+
     if (user) {
-      // if (user.isDisable) {
-      //   throw new BadRequestException(generateMessage('User').IS_DISABLED);
-      // }
-      return { ...user, role: User.name };
+      // Ensure _id is cast to a string if necessary
+      return { ...user, _id: String(user._id), role: User.name };
     }
-    throw new UnauthorizedException();
+
+    throw new UnauthorizedException('User not found or unauthorized');
   }
 }

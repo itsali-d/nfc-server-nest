@@ -1,7 +1,5 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { SignUpUserDto } from './signUpUser.dto';
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { IsOptional, ValidateIf } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
 export enum UserType {
   PERSONAL = 'PERSONAL',
   BUSINESS = 'BUSINESS',

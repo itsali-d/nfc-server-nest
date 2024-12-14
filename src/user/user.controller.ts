@@ -30,7 +30,7 @@ import {
   VerifyOtpForgetPasswordDto,
   GoogleSignInDto,
 } from 'src/utils';
-import { AuthGuard } from '@nestjs/passport';
+
 @ApiTags('user')
 @Controller('user')
 export class UserController {
@@ -81,7 +81,7 @@ export class UserController {
   @Get('/all')
   @UseGuards(DynamicAuthGuard(['jwt', 'user']))
   async getAllUsers() {
-    let response = await this.userService.getUsers();
+    const response = await this.userService.getUsers();
     return response;
   }
   @Get('search-user')
@@ -164,6 +164,16 @@ export class UserController {
     const response = await this.userService.createReview(body);
     return response;
   }
+
+  // delete
+  @ApiBearerAuth()
+  @Post('delete-account')
+  @UseGuards(DynamicAuthGuard(['user']))
+  async deleteAccunt(@Query('id') id: string) {
+    const response = await this.userService.deleteAccunt(id);
+    return response;
+  }
+
   @ApiBearerAuth()
   @Get('reviews')
   @UseGuards(DynamicAuthGuard(['user']))
