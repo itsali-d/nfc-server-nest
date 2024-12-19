@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prefer-const */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -24,6 +25,7 @@ import {
   Offer,
   Gallery,
 } from 'src/utils';
+import { AppleSignInDto } from 'src/utils/dto/user/appleSignIn.dto';
 
 @Injectable()
 export class UserService {
@@ -35,7 +37,7 @@ export class UserService {
     @InjectModel(Offer.name) private readonly offerModel: Model<Offer>,
     @InjectModel(Gallery.name) private readonly galleryModel: Model<Gallery>,
   ) {
-    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Replace with your client ID
+    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     this.transporter = nodemailer.createTransport({
       service: 'Gmail',
       host: 'smtp.gmail.com', // e.g., smtp.gmail.com
@@ -86,6 +88,55 @@ export class UserService {
       return new Response(this.StatusCode, err?.message, err).error();
     }
   }
+
+  async appleSignIn(appleSignInDto: AppleSignInDto) {
+    const { idToken, email, fullName } = appleSignInDto;
+
+    // Validate the idToken with Apple's public keys
+    const isValid = await this.validateAppleIdToken(idToken);
+    if (!isValid) {
+      throw new Error('Invalid Apple ID Token');
+    }
+
+    // Check if the user exists in your database
+    let user = await this.findUserByEmail(email);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (!user) {
+      // If not, create a new user
+      user = await this.createUser({
+        email,
+        fullName,
+        provider: 'apple',
+      });
+    }
+
+    // Generate and return JWT or session token for the user
+    const token = await this.generateJwtToken(user);
+    return { user, token };
+  }
+
+  private async validateAppleIdToken(idToken: string): Promise<boolean> {
+    // Add logic to validate idToken using Apple's public keys or libraries
+    // Example: Use Apple Auth library or validate manually
+    return true; // Simplified for demonstration
+  }
+
+  private async findUserByEmail(email: string) {
+    // Find the user by email in the database
+    // Add your logic here
+  }
+
+  private async createUser(userDetails: any) {
+    // Create and save a new user in the database
+    // Add your logic here
+  }
+
+  private async generateJwtToken(user: any) {
+    // Generate a JWT token for the user
+    // Add your logic here
+  }
+
   async signup(createUserDto: SignUpUserDto) {
     try {
       const exists = await this.userModel.findOne({

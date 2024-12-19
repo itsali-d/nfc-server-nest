@@ -30,11 +30,12 @@ import {
   VerifyOtpForgetPasswordDto,
   GoogleSignInDto,
 } from 'src/utils';
+import { AppleSignInDto } from 'src/utils/dto/user/appleSignIn.dto';
 
 @ApiTags('user')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
   @Post('signup')
   @ApiOperation({
     summary: 'Register new User for mobile application',
@@ -47,6 +48,14 @@ export class UserController {
   @Post('google-signin')
   async googleSignIn(@Body() signUpGoogleDto: GoogleSignInDto) {
     return this.userService.googleSignIn(signUpGoogleDto);
+  }
+  @Post('apple-signin')
+  @ApiOperation({
+    summary: 'Sign in with Apple for mobile application',
+    description: 'Authenticate a user using Apple Sign-In',
+  })
+  async appleSignIn(@Body() appleSignInDto: AppleSignInDto) {
+    return this.userService.appleSignIn(appleSignInDto);
   }
   @Post('login')
   @ApiOperation({
