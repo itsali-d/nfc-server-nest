@@ -108,21 +108,36 @@ export class UserService {
 
     // Check if the user exists in your database
     let user = await this.findUserByEmail(email);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (!user) {
-      // If not, create a new user
+
+    if (user) {
+      // Update the verified field for existing user if not already true
+      if (!user.verified) {
+        user.verified = true;
+        await user.save();
+      }
+    } else {
+      // If not, create a new user and set verified to true
       user = await this.createUser({
         email,
         fullName,
         provider: 'apple',
+        verified: true, // Set verified to true
       });
     }
 
-    // Generate and return JWT or session token for the user
-    const token = await this.generateJwtToken(user);
-    return { user, token };
+    // Generate a token for the user
+    const token = this.generateToken(user);
+
+    return {
+      status: 200,
+      message: 'Sign-in successful',
+      data: {
+        user,
+        token,
+      },
+    };
   }
+
 
   private async validateAppleIdToken(idToken: string): Promise<boolean> {
     // Add logic to validate idToken using Apple's public keys or libraries
