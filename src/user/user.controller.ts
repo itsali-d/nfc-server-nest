@@ -35,7 +35,7 @@ import { AppleSignInDto } from 'src/utils/dto/user/appleSignIn.dto';
 @ApiTags('user')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
   @Post('signup')
   @ApiOperation({
     summary: 'Register new User for mobile application',

@@ -60,20 +60,28 @@ export class UserService {
       });
       const payload = ticket.getPayload();
       const { sub, email, name, picture } = payload;
-      const exists = await this.userModel.findOne({
-        email,
-      });
-      if (exists) {
-        const token = generateTokenUser(exists);
+
+      let user = await this.userModel.findOne({ email });
+
+      if (user) {
+        // Update the verified field for existing user if not already true
+        if (!user.verified) {
+          user.verified = true;
+          await user.save();
+        }
+        const token = generateTokenUser(user);
         return new Response((this.StatusCode = 200), this.MESSAGES.LOGIN, {
-          user: exists,
+          user,
           token,
         });
       }
+
+      // Create a new user with verified set to true
       const createdUser = await this.userModel.create({
         name,
         profilePic: picture,
         email,
+        verified: true, // Set verified to true
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
